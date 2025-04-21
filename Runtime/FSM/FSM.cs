@@ -19,6 +19,7 @@ public class FSM : MonoBehaviour, IEventListener<string>
         {
             m_EventManager = new EventManager<string>();
             s_Instance = this;
+            _onAwake();
         }
     }
 
@@ -28,12 +29,13 @@ public class FSM : MonoBehaviour, IEventListener<string>
         {
             m_EventManager.RemoveAllEvents();
             s_Instance = null;
+            _onDestroy();
         }
     }
 
     private void Start()
     {
-        
+        _onStart();
     }
     #endregion
 
@@ -93,5 +95,23 @@ public class FSM : MonoBehaviour, IEventListener<string>
         }
         m_EventManager.DispatchEvent(a_eventName, a_eventData);
     }
+    #endregion
+    
+    #region abstract methods
+    protected virtual void _onStart()
+    {
+        // Override this method in derived classes to implement custom start logic
+    }
+    
+    protected virtual void _onDestroy()
+    {
+        // Override this method in derived classes to implement custom destroy logic
+    }
+    
+    protected virtual void _onAwake()
+    {
+        // Override this method in derived classes to implement custom awake logic
+    }
+    
     #endregion
 }

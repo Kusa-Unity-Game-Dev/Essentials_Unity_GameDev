@@ -1,6 +1,6 @@
 {
     "name": "com.kusabb.essentials",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "displayName": "Game Essentials",
     "description": "All essential modules like,  Manager, Event System & Notifications etc",
     "unity": "6000.0",
