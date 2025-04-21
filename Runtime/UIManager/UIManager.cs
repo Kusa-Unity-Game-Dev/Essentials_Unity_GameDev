@@ -22,15 +22,24 @@ public class UIManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        _onAwake();
     }
 
     private void Start()
     {
+        _onStart();
         //FSM.AddListener_s(GameConstants.E__CLEARUI, privateClearAllData);
     }
 
     private void OnDestroy()
     {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+
+        _onDestroy();
         //Instance = null;
         //FSM.RemoveListener_s(GameConstants.E__CLEARUI, privateClearAllData);
     }
@@ -110,4 +119,21 @@ public class UIManager : MonoBehaviour
         Instance.uiLastShownScreens.Clear();
         Instance.ui_stackedScreens.Clear();
     }
+    
+    //virtual Methods
+    public virtual void _onAwake()
+    {
+        // Override this method in derived classes to add custom behavior
+    }
+    
+    public virtual void _onStart()
+    {
+        // Override this method in derived classes to add custom behavior
+    }
+    
+    public virtual void _onDestroy()
+    {
+        // Override this method in derived classes to add custom behavior
+    }
+    
 }
