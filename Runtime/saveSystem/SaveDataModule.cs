@@ -38,16 +38,32 @@ public abstract class SaveDataModule
 }
 
 
-/*public enum ESaveModule
+public enum ESaveModule
 {
     ECurrency = 0,
     EGameData,
 
-    EG1_ballJump =100,
-    EG2_EggBasket,
-    EG3_GameSaveData,
-    EG4_GameSaveData,
-}*/
+    E_Slot1 = 100,
+    E_Slot2,
+    E_Slot3,
+    E_Slot4,
+    E_Slot5,
+    E_Slot6,
+    E_Slot7,
+    E_Slot8,
+    E_Slot9,
+    E_Slot10,
+    E_Slot11,
+    E_Slot12,
+    E_Slot13,
+    E_Slot14,
+    E_Slot15,
+    E_Slot16,
+    E_Slot17,
+    E_Slot18,
+    E_Slot19,
+    E_Slot20,
+}
 
 /*
  * how to use the system : 

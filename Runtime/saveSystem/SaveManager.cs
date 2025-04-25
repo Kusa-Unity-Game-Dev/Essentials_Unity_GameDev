@@ -1,20 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/*
-to use this module, create a enum named
-public enum ESaveModule
-{
-    ECurrency = 0,
-    EGameData,
 
-    EG1_ballJump =100,
-    EG2_EggBasket,
-    EG3_GameSaveData,
-    EG4_GameSaveData,
-}
-and use this in save data derived modules
-*/
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance { get; private set; }
