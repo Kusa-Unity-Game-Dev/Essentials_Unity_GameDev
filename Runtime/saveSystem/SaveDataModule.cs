@@ -38,7 +38,7 @@ public abstract class SaveDataModule
 }
 
 
-public enum ESaveModule
+/*public enum ESaveModule
 {
     ECurrency = 0,
     EGameData,
@@ -47,7 +47,7 @@ public enum ESaveModule
     EG2_EggBasket,
     EG3_GameSaveData,
     EG4_GameSaveData,
-}
+}*/
 
 /*
  * how to use the system : 
