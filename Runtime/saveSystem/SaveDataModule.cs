@@ -1,8 +1,12 @@
 using System.IO;
 using UnityEngine;
 
+public enum SaveFormat { JSON, Binary }
+
 public abstract class SaveDataModule
 {
+	public static SaveFormat saveFormat = SaveFormat.Binary;
+
     public abstract string FileName { get; }
     public abstract ESaveModule savemodule { get; }
 
@@ -15,9 +19,17 @@ public abstract class SaveDataModule
         string fullPath = Path.Combine(slotPath, FileName);
         if (File.Exists(fullPath))
         {
-            string json = File.ReadAllText(fullPath);
-            JsonUtility.FromJsonOverwrite(json, this);
-            Debug.Log($"Module '{savemodule}' loaded on demand from {fullPath}");
+            Debug.Log($"Module '{savemodule}' loaded on demand from {fullPath}");			
+			if (saveFormat == SaveFormat.Binary)
+            {
+                var bytes = File.ReadAllBytes(fullPath);
+                JsonUtility.FromJsonOverwrite(System.Text.Encoding.UTF8.GetString(bytes), this);
+            }
+            else
+            {
+                string json = File.ReadAllText(fullPath);
+                JsonUtility.FromJsonOverwrite(json, this);
+            }
         }
         else
         {
@@ -31,10 +43,32 @@ public abstract class SaveDataModule
     public void SaveOnDemand(string slotPath)
     {
         string fullPath = Path.Combine(slotPath, FileName);
-        string json = JsonUtility.ToJson(this);
-        File.WriteAllText(fullPath, json);
+        string json = JsonUtility.ToJson(this, true);
+		if (saveFormat == SaveFormat.Binary)
+        {
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
+            File.WriteAllBytes(fullPath, bytes);
+        }
+        else
+        {
+            File.WriteAllText(fullPath, json);
+        }
+        //File.WriteAllText(fullPath, json);
         Debug.Log($"Module '{savemodule}' saved on demand to {fullPath}");
     }
+#if UNITY_EDITOR
+[UnityEditor.MenuItem("Kusa/Toggle Save Format")]
+public static void ToggleSaveFormat()
+{
+    SaveDataModule.saveFormat = SaveDataModule.saveFormat == SaveFormat.JSON
+        ? SaveFormat.Binary
+        : SaveFormat.JSON;
+
+    Debug.Log("Save format set to: " + SaveDataModule.saveFormat);
+}
+#endif
+
+
 }
 
 
