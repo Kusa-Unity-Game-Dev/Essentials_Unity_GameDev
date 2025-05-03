@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEngine;
+using System.IO.Compression;
 
 public enum SaveFormat { JSON, Binary }
 
@@ -22,8 +23,10 @@ public abstract class SaveDataModule
             Debug.Log($"Module '{savemodule}' loaded on demand from {fullPath}");			
 			if (saveFormat == SaveFormat.Binary)
             {
-                var bytes = File.ReadAllBytes(fullPath);
-                JsonUtility.FromJsonOverwrite(System.Text.Encoding.UTF8.GetString(bytes), this);
+				string decompressed = DecompressBytes(File.ReadAllBytes(fullPath));
+				JsonUtility.FromJsonOverwrite(decompressed, this);
+                //var bytes = File.ReadAllBytes(fullPath);
+                //JsonUtility.FromJsonOverwrite(System.Text.Encoding.UTF8.GetString(bytes), this);
             }
             else
             {
@@ -46,8 +49,8 @@ public abstract class SaveDataModule
         string json = JsonUtility.ToJson(this, true);
 		if (saveFormat == SaveFormat.Binary)
         {
-            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
-            File.WriteAllBytes(fullPath, bytes);
+			byte[] compressed = CompressString(json);
+			File.WriteAllBytes(fullPath, compressed);            
         }
         else
         {
@@ -56,16 +59,38 @@ public abstract class SaveDataModule
         //File.WriteAllText(fullPath, json);
         Debug.Log($"Module '{savemodule}' saved on demand to {fullPath}");
     }
-#if UNITY_EDITOR
-[UnityEditor.MenuItem("Kusa/Toggle Save Format")]
-public static void ToggleSaveFormat()
-{
-    SaveDataModule.saveFormat = SaveDataModule.saveFormat == SaveFormat.JSON
-        ? SaveFormat.Binary
-        : SaveFormat.JSON;
 
-    Debug.Log("Save format set to: " + SaveDataModule.saveFormat);
-}
+	public static byte[] CompressString(string text)
+	{
+		var bytes = System.Text.Encoding.UTF8.GetBytes(text);
+		using var output = new MemoryStream();
+		using (var gzip = new GZipStream(output, CompressionMode.Compress))
+		{
+    		gzip.Write(bytes, 0, bytes.Length);
+		}
+		return output.ToArray();
+	}
+
+	public static string DecompressBytes(byte[] data)
+	{
+		using var input = new MemoryStream(data);
+		using var gzip = new GZipStream(input, CompressionMode.Decompress);
+		using var reader = new StreamReader(gzip);
+		return reader.ReadToEnd();
+	}
+
+
+
+#if UNITY_EDITOR
+	[UnityEditor.MenuItem("Kusa/Toggle Save Format")]
+	public static void ToggleSaveFormat()
+	{
+    	SaveDataModule.saveFormat = SaveDataModule.saveFormat == SaveFormat.JSON
+        	? SaveFormat.Binary
+        	: SaveFormat.JSON;
+
+    	Debug.Log("Save format set to: " + SaveDataModule.saveFormat);
+	}
 #endif
 
 
