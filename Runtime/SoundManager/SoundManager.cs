@@ -64,7 +64,7 @@ public class SoundManager : MonoBehaviour
 
     #region Public API
 
-    public static void Play(string id) => I?.Play2D(id);
+    public static void PlaySound(string id) => I?.Play2D(id);
     public static void PlayAt(string id, Vector3 position) => I?.Play3D(id, position);
     public static void StopAllSfx() => I?.StopAllSfxInternal();
     public static void PlayMusic(string id, float crossfade = -1f) => I?.PlayMusicInternal(id, crossfade);
