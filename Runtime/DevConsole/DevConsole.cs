@@ -4,49 +4,53 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 
-public class DevConsole : MonoBehaviour
+namespace BB.Framework
 {
-    public static DevConsole Instance { get; private set; } // Singleton instance
-
-    public GameObject consolePanel;
-    public TMP_Text logText;
-    public TMP_InputField inputField;
-    public Button m_cancelBtn;
-    public Button m_execute;
-
-    private Dictionary<string, Func<string[], string>> commands = new Dictionary<string, Func<string[], string>>();
-
-    #region Essential
-    private void Awake()
+    public class DevConsole : MonoBehaviour
     {
-        if (Instance == null)
+        public static DevConsole Instance { get; private set; } // Singleton instance
+
+        public GameObject consolePanel;
+        public TMP_Text logText;
+        public TMP_InputField inputField;
+        public Button m_cancelBtn;
+        public Button m_execute;
+
+        private Dictionary<string, Func<string[], string>> commands = new Dictionary<string, Func<string[], string>>();
+
+        #region Essential
+
+        private void Awake()
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+                return;
+            }
         }
-        else
+
+        private void OnDestroy()
         {
-            Destroy(gameObject);
-            return;
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
-    }
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            Instance = null;
-        }
-    }
 
 
-    private void Start()
-    {
-        consolePanel.SetActive(false); // Hide console initially
-        RegisterDefaultCommands();
+        private void Start()
+        {
+            consolePanel.SetActive(false); // Hide console initially
+            RegisterDefaultCommands();
 
-        m_cancelBtn.onClick.AddListener(ToggleConsole);
-        m_execute.onClick.AddListener(executeCommandWithInput);
-    }
+            m_cancelBtn.onClick.AddListener(ToggleConsole);
+            m_execute.onClick.AddListener(executeCommandWithInput);
+        }
 #if UNITY_EDITOR
     private void Update()
     {
@@ -56,79 +60,80 @@ public class DevConsole : MonoBehaviour
         }
     }
 #endif
-    
-    #endregion
 
-    private void ToggleConsole()
-    {
-        consolePanel.SetActive(!consolePanel.activeSelf);
-        if (consolePanel.activeSelf) inputField.Select();
-    }
+        #endregion
 
-    private void executeCommandWithInput()
-    {
-        ExecuteCommand(inputField.text);
-        inputField.text = "";
-    }
-
-    public void ExecuteCommand(string input)
-    {
-        string[] args = input.Split(' ');
-        string command = args[0].ToLower();
-
-        if (commands.ContainsKey(command))
+        private void ToggleConsole()
         {
-            string result = commands[command].Invoke(args);
-            Log($"Result : {result}");
-        }
-        else
-        {
-            Log($"Unknown command: {command}");
+            consolePanel.SetActive(!consolePanel.activeSelf);
+            if (consolePanel.activeSelf) inputField.Select();
         }
 
-        inputField.text = "";
-        inputField.Select();
-    }
-
-    /// <summary>
-    /// Registers a new command dynamically.
-    /// </summary>
-    public void RegisterCommand(string command, Func<string[], string> action)
-    {
-        if (!commands.ContainsKey(command.ToLower()))
+        private void executeCommandWithInput()
         {
-            commands.Add(command.ToLower(), action);
-            Log($"Command '{command}' registered.");
+            ExecuteCommand(inputField.text);
+            inputField.text = "";
         }
-        else
+
+        public void ExecuteCommand(string input)
         {
-            Log($"Command '{command}' already exists.");
-        }
-    }
+            string[] args = input.Split(' ');
+            string command = args[0].ToLower();
 
-    /// <summary>
-    /// Removes a registered command.
-    /// </summary>
-    public void UnregisterCommand(string command)
-    {
-        if (commands.ContainsKey(command.ToLower()))
+            if (commands.ContainsKey(command))
+            {
+                string result = commands[command].Invoke(args);
+                Log($"Result : {result}");
+            }
+            else
+            {
+                Log($"Unknown command: {command}");
+            }
+
+            inputField.text = "";
+            inputField.Select();
+        }
+
+        /// <summary>
+        /// Registers a new command dynamically.
+        /// </summary>
+        public void RegisterCommand(string command, Func<string[], string> action)
         {
-            commands.Remove(command.ToLower());
-            Log($"Command '{command}' removed.");
+            if (!commands.ContainsKey(command.ToLower()))
+            {
+                commands.Add(command.ToLower(), action);
+                Log($"Command '{command}' registered.");
+            }
+            else
+            {
+                Log($"Command '{command}' already exists.");
+            }
         }
-        else
+
+        /// <summary>
+        /// Removes a registered command.
+        /// </summary>
+        public void UnregisterCommand(string command)
         {
-            Log($"Command '{command}' not found.");
+            if (commands.ContainsKey(command.ToLower()))
+            {
+                commands.Remove(command.ToLower());
+                Log($"Command '{command}' removed.");
+            }
+            else
+            {
+                Log($"Command '{command}' not found.");
+            }
         }
-    }
 
-    private void RegisterDefaultCommands()
-    {
+        private void RegisterDefaultCommands()
+        {
 
-    }
+        }
 
-    private void Log(string message)
-    {
-        logText.text += message + "\n";
+        private void Log(string message)
+        {
+            logText.text += message + "\n";
+        }
     }
 }

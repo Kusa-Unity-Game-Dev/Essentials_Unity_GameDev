@@ -1,5 +1,6 @@
 using UnityEngine;
 
+namespace BB.Framework{
 public class DataBaseInstance : MonoBehaviour
 {
     private static DataBaseInstance s_Instance;
@@ -26,4 +27,5 @@ public class DataBaseInstance : MonoBehaviour
 
     //public static 
 
+}	
 }

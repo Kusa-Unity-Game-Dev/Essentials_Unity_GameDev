@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+namespace BB.Framework {
 
 public class SaveSlotManager : MonoBehaviour
 {
@@ -70,4 +71,5 @@ public class SaveSlotManager : MonoBehaviour
     {
         return Path.Combine(Application.persistentDataPath, SaveDirectory, SlotPrefix + slotName);
     }
+}
 }

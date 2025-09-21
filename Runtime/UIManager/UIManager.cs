@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace BB.Framework {
+
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
@@ -136,4 +138,5 @@ public class UIManager : MonoBehaviour
         // Override this method in derived classes to add custom behavior
     }
     
+}
 }

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+namespace BB.Framework {
 public class FSM : MonoBehaviour, IEventListener<string>
 {
     private static FSM s_Instance;
@@ -114,4 +115,5 @@ public class FSM : MonoBehaviour, IEventListener<string>
     }
     
     #endregion
+}
 }

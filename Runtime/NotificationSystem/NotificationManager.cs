@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 
+namespace BB.Framework {
+
 public class NotificationManager : MonoBehaviour
 {
     public static NotificationManager s_Instance { get; private set; }
@@ -46,4 +48,5 @@ public class NotificationManager : MonoBehaviour
 
     }
 
+}
 }

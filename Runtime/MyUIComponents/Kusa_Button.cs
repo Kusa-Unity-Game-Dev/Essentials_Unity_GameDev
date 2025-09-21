@@ -1,22 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-
-[AddComponentMenu("KUSA_UI/Button2", 30)]
-public class Kusa_Button : Button
+namespace BB.Framework
 {
-    //[SerializeField]
-    public string SoundId;
 
-    protected override void Start()
+    [AddComponentMenu("KUSA_UI/Button2", 30)]
+    public class Kusa_Button : Button
     {
-        base.Start();
-        onClick.AddListener(PlaySound);
+        //[SerializeField]
+        public string SoundId;
+
+        protected override void Start()
+        {
+            base.Start();
+            onClick.AddListener(PlaySound);
+        }
+
+        private void PlaySound()
+        {
+            SoundManager.PlaySound(SoundId);
+        }
     }
 
-    private void PlaySound()
-    {
-        SoundManager.PlaySound(SoundId);
-    }
 }
-

@@ -1,10 +1,13 @@
 using UnityEngine;
 
-
-public interface ITweenAnim
+namespace BB.Framework
 {
-    public void playInAnim(float duration);
-    public void playOutAnim(float duration);
+
+    public interface ITweenAnim
+    {
+        public void playInAnim(float duration);
+        public void playOutAnim(float duration);
 
 
+    }
 }

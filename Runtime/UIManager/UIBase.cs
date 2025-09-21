@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
+namespace BB.Framework {
 public abstract class UIBase : MonoBehaviour
 {
     [SerializeField]
@@ -89,4 +90,5 @@ public abstract class UIBase : MonoBehaviour
         m_graphicRaycaster.enabled = true;
         OnCanvasShowEnd();
     }
+}
 }

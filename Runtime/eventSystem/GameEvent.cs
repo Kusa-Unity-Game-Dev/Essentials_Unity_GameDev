@@ -1,20 +1,24 @@
-public class GameEvent
+namespace BB.Framework
 {
-    public string eventName;
 
-    public GameEvent(string name)
+    public class GameEvent
     {
-        eventName = name;
-    }
+        public string eventName;
 
-    public string EventName
-    {
-        get { return eventName; }
-    }
+        public GameEvent(string name)
+        {
+            eventName = name;
+        }
 
-    //setevent
-    public void SetEventName(string name)
-    {
-        eventName = name;
+        public string EventName
+        {
+            get { return eventName; }
+        }
+
+        //setevent
+        public void SetEventName(string name)
+        {
+            eventName = name;
+        }
     }
 }

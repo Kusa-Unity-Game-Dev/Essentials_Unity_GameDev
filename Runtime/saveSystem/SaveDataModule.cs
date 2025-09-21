@@ -1,6 +1,7 @@
 using System.IO;
 using UnityEngine;
 using System.IO.Compression;
+namespace BB.Framework {
 
 public enum SaveFormat { JSON, Binary }
 
@@ -123,7 +124,7 @@ public enum ESaveModule
     E_Slot19,
     E_Slot20,
 }
-
+}
 /*
  * how to use the system : 
 using System.IO;

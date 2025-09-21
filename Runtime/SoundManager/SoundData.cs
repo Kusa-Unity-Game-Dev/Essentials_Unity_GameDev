@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
+namespace BB.Framework {
+
 /// Scriptable: one entry per sound
 [Serializable]
 public class Sound
@@ -39,4 +41,5 @@ public class Sound
 public class SoundData : ScriptableObject
 {
     public Sound[] sounds; // List of all sounds in the game
+}
 }

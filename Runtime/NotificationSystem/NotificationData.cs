@@ -1,15 +1,19 @@
 using System;
 using UnityEngine;
 
-[Serializable]
-public class NotificationData
+namespace BB.Framework
 {
-    public string message;
-    public NotificationType type;
 
-    public NotificationData(string message, NotificationType type)
+    [Serializable]
+    public class NotificationData
     {
-        this.message = message;
-        this.type = type;
+        public string message;
+        public NotificationType type;
+
+        public NotificationData(string message, NotificationType type)
+        {
+            this.message = message;
+            this.type = type;
+        }
     }
 }

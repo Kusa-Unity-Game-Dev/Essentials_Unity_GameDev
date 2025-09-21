@@ -1,9 +1,13 @@
 using UnityEngine;
 
-public class dontDestoyOnLoad : MonoBehaviour
+namespace BB.Framework
 {
-    private void Awake()
+
+    public class dontDestoyOnLoad : MonoBehaviour
     {
-        DontDestroyOnLoad(gameObject);
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
     }
 }

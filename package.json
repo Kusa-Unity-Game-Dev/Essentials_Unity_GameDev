@@ -1,6 +1,6 @@
 {
     "name": "com.kusabb.essentials",
-    "version": "1.0.7",
+    "version": "1.1.0",
     "displayName": "Game Essentials",
     "description": "All essential modules like,  Manager, Event System & Notifications etc",
     "unity": "6000.0",
@@ -13,5 +13,7 @@
         "name": "kunal sagar",
         "url": "https://github.com/kusaflow"
     },
-    "dependencies": {}
+    "dependencies": {
+        "com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm"
+    }
 }

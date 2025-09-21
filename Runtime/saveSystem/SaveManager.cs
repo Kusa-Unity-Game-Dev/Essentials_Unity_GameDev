@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace BB.Framework {
 
 public class SaveManager : MonoBehaviour
 {
@@ -79,7 +80,7 @@ public class SaveManager : MonoBehaviour
         return null;
     }
 }
-
+}
 
 
 /*
