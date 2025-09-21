@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor.SceneManagement;
 using System.Collections.Generic;
 
-namespace com.kusabb
+namespace BB.Framework
 {
     public class SceneSelectorEditor : EditorWindow
     {
