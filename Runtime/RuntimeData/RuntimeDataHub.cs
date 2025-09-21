@@ -13,7 +13,7 @@ namespace BB.Framework
 
         [SerializeField] private bool dontDestroyOnLoad = false;
         [SerializeField] private bool autoLoadOnAwake = true;
-        [SerializeField] private PersistenceConfig persistenceConfig;
+        [SerializeField] private PersistenceConfig2 persistenceConfig;
 
         private ValueStore _store;
 

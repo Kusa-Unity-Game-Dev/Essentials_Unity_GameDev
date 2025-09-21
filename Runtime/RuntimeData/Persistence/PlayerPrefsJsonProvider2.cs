@@ -5,7 +5,7 @@ using UnityEngine;
 namespace BB.Framework
 {
     [CreateAssetMenu(fileName = "PersistenceConfig", menuName = "kusa/RuntimeData/Persistence Config")]
-    public sealed class PersistenceConfig : ScriptableObject
+    public sealed class PersistenceConfig2 : ScriptableObject
     {
         [Tooltip("PlayerPrefs key to store serialized values")]
         public string playerPrefsKey = "RUNTIME_DATA_STORE";
