@@ -13,7 +13,5 @@
         "name": "kunal sagar",
         "url": "https://github.com/kusaflow"
     },
-    "dependencies": {
-        "com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm"
-    }
+    "dependencies": {}
 }
