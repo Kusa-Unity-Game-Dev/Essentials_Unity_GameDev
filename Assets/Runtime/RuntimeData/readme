@@ -1,0 +1,100 @@
+﻿public static readonly ValueKey<bool> SfxEnabled = new("settings.audio.sfx");
+
+RuntimeDataHub.Service.Set(SfxEnabled, true, ValueScope.Persistent, persist:true);
+bool sfx = RuntimeDataHub.Service.GetOrDefault(SfxEnabled, true);
+
+
+IDisposable sub = RuntimeDataHub.Service.Subscribe(Keys.PlayerLevel, lvl =>
+{
+    Debug.Log("Level changed: " + lvl);
+}, invokeImmediately:true);
+
+
+var bag = await RuntimeDataHub.Service.Await(Keys.PendingRewards,
+    b => b != null && b.Items.Count > 0, timeoutSeconds: 10f);
+
+
+// Scene-only preview location
+RuntimeDataHub.Service.Set(Keys.AimWorldPos, hit.point, ValueScope.Scene);
+
+
+var store = RuntimeDataHub.Service;
+var computed = new RuntimeData.ComputedValue<int>(
+    store,
+    new ValueKey<int>("player.power"),
+    compute: () =>
+    {
+        var lvl = store.GetOrDefault(new ValueKey<int>("player.level"), 1);
+        var gear = store.GetOrDefault(new ValueKey<int>("player.gearScore"), 0);
+        return lvl * 10 + gear;
+    }
+);
+computed.Wire(new ValueKey<int>("player.level"));
+computed.Wire(new ValueKey<int>("player.gearScore"));
+// dispose 'computed' when you no longer need it
+
+
+
+// Samples/SampleUsage.cs
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace RuntimeData
+{
+    [System.Serializable]
+    public class Wallet { public int coins; public int gems; public void Add(int c, int g=0){ coins+=c; gems+=g; } }
+
+    [System.Serializable]
+    public class Reward { public string type; public int amount; }
+
+    [System.Serializable]
+    public class RewardBag { public System.Collections.Generic.List<Reward> Items = new(); }
+
+    public sealed class SampleUsage : MonoBehaviour
+    {
+        private IValueStore Store => RuntimeDataHub.Service;
+
+        private void Start()
+        {
+            // Ensure defaults
+            if (!Store.TryGet(Keys.Wallet, out Wallet _))
+                Store.Set(Keys.Wallet, new Wallet { coins = 0, gems = 0 }, ValueScope.Persistent, persist:true);
+
+            if (!Store.TryGet(Keys.PendingRewards, out RewardBag _))
+                Store.Set(Keys.PendingRewards, new RewardBag(), ValueScope.Session);
+
+            // Subscribe to wallet updates (remember to dispose in OnDestroy)
+            _sub = Store.Subscribe(Keys.Wallet, w => Debug.Log($"Wallet: {w.coins} coins"), invokeImmediately:true);
+
+            // Earn something mid-match:
+            EarnCoins(50);
+
+            // Later, maybe move to Reward screen:
+            GameEvents.RaiseScreenChanged(GameScreen.Reward);
+
+            // Await an aim world position (e.g., another system will set it soon)
+            _ = WaitForAim();
+        }
+
+        private IDisposable _sub;
+
+        private void OnDestroy() => _sub?.Dispose();
+
+        private void EarnCoins(int amount)
+        {
+            var bag = Store.GetOrDefault(Keys.PendingRewards, new RewardBag());
+            bag.Items.Add(new Reward { type = "coins", amount = amount });
+            Store.Set(Keys.PendingRewards, bag, ValueScope.Session);
+        }
+
+        private async Task WaitForAim()
+        {
+            try
+            {
+                var pos = await Store.Await(Keys.AimWorldPos, p => p != default, timeoutSeconds: 5f);
+                Debug.Log("Aim ready at " + pos);
+            }
+            catch { Debug.LogWarning("Aim not provided in time"); }
+        }
+    }
+}
