@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace BB.Framework
 {
@@ -11,12 +12,12 @@ namespace BB.Framework
         public class GameConstant
         {
             public string ID;
-            public string Value;
+            public Object Value;
         }
 
         [SerializeField] private List<GameConstant> constants = new List<GameConstant>();
 
-        private static Dictionary<string, string> lookupTable;
+        private static Dictionary<string, Object> lookupTable;
 
         private void OnEnable()
         {
@@ -27,7 +28,7 @@ namespace BB.Framework
         {
             if (lookupTable == null)
             {
-                lookupTable = new Dictionary<string, string>();
+                lookupTable = new Dictionary<string, Object>();
                 foreach (var constant in constants)
                 {
                     if (!lookupTable.ContainsKey(constant.ID))
@@ -36,13 +37,13 @@ namespace BB.Framework
             }
         }
 
-        public static string GetValue(string id)
+        public static Object GetValue(string id)
         {
-            if (lookupTable != null && lookupTable.TryGetValue(id, out string value))
+            if (lookupTable != null && lookupTable.TryGetValue(id, out Object value))
                 return value;
 
             Debug.LogWarning($"Key '{id}' not found in GameConstantsDatabase.");
-            return string.Empty;
+            return null;
         }
     }
 }
