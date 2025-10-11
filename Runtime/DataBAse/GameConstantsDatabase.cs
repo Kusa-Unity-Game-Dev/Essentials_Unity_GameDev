@@ -5,19 +5,19 @@ using Object = UnityEngine.Object;
 
 namespace BB.Framework
 {
-    [CreateAssetMenu(fileName = "GameConstantsDatabase", menuName = "kusa/GameData/Game Constants Database")]
-    public class GameConstantsDatabase : ScriptableObject
+    //[CreateAssetMenu(fileName = "GameConstantsDatabase", menuName = "kusa/GameData/Game Constants Database")]
+    public class GameConstantsDatabase<T> : ScriptableObject
     {
         [Serializable]
         public class GameConstant
         {
             public string ID;
-            public Object Value;
+            public T Value;
         }
 
         [SerializeField] private List<GameConstant> constants = new List<GameConstant>();
 
-        private static Dictionary<string, Object> lookupTable;
+        private static Dictionary<string, T> lookupTable;
 
         private void OnEnable()
         {
@@ -28,7 +28,7 @@ namespace BB.Framework
         {
             if (lookupTable == null)
             {
-                lookupTable = new Dictionary<string, Object>();
+                lookupTable = new Dictionary<string, T>();
                 foreach (var constant in constants)
                 {
                     if (!lookupTable.ContainsKey(constant.ID))
@@ -37,13 +37,14 @@ namespace BB.Framework
             }
         }
 
-        public static Object GetValue(string id)
+        public T GetValue(string id)
         {
-            if (lookupTable != null && lookupTable.TryGetValue(id, out Object value))
+            if (lookupTable != null && lookupTable.TryGetValue(id, out T value))
                 return value;
 
             Debug.LogWarning($"Key '{id}' not found in GameConstantsDatabase.");
-            return null;
+            return default;
         }
+        
     }
 }
