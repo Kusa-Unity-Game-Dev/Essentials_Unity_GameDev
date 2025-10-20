@@ -51,7 +51,7 @@ namespace BB.Framework
         {
 
             rectTransform.localScale = Vector3.zero;
-            rectTransform.DOScale(Vector3.one, m_initAnimationTime).SetEase(Ease.OutBack);
+            rectTransform.DOScale(Vector3.one, m_initAnimationTime).SetEase(Ease.OutBack).SetUpdate(true);
 
         }
 
@@ -62,7 +62,7 @@ namespace BB.Framework
 
         protected override void OnCanvasHideBegin()
         {
-            rectTransform.DOScale(Vector3.zero, m_outroAnimationTime).SetEase(Ease.InBack);
+            rectTransform.DOScale(Vector3.zero, m_outroAnimationTime).SetEase(Ease.InBack).SetUpdate(true);
         }
 
         protected override void OnCanvasHideEnd()
