@@ -6,7 +6,11 @@ using UnityEngine.Audio;
 
 namespace BB.Framework
 {
-
+    /// <summary>
+    /// Advanced audio management system with object pooling, spatial audio, and mixer integration.
+    /// Implements the Singleton pattern and provides both 2D and 3D audio playback.
+    /// Features include: audio source pooling, cooldown management, instance limits, music crossfading, and volume control.
+    /// </summary>
     public class SoundManager : MonoBehaviour
     {
         public static SoundManager I { get; private set; }
