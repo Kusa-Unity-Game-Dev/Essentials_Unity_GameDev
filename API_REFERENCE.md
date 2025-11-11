@@ -781,4 +781,264 @@ public class MainMenuUI : UIBase
 
 ---
 
+## SingletonMonoBehaviour<T>
+
+Thread-safe singleton base class for MonoBehaviours.
+
+### Properties
+
+#### Instance
+
+```csharp
+static T Instance { get; }
+```
+
+Gets the singleton instance. Thread-safe implementation.
+
+#### HasInstance
+
+```csharp
+static bool HasInstance { get; }
+```
+
+Checks if an instance exists without creating one.
+
+### Virtual Methods
+
+#### OnSingletonAwake
+
+```csharp
+protected virtual void OnSingletonAwake()
+```
+
+Called when the singleton is first initialized. Override this instead of Awake().
+
+#### OnSingletonDestroy
+
+```csharp
+protected virtual void OnSingletonDestroy()
+```
+
+Called when the singleton is destroyed. Override this instead of OnDestroy().
+
+### Example
+
+```csharp
+public class GameController : SingletonMonoBehaviour<GameController>
+{
+    protected override void OnSingletonAwake()
+    {
+        // Initialize game controller
+        Debug.Log("GameController initialized");
+    }
+    
+    protected override void OnSingletonDestroy()
+    {
+        // Cleanup
+        Debug.Log("GameController destroyed");
+    }
+    
+    public void StartGame()
+    {
+        // Game logic
+    }
+}
+
+// Usage
+GameController.Instance.StartGame();
+```
+
+---
+
+## GameUtilities
+
+Static utility class with common game development helpers.
+
+### Timing Utilities
+
+#### DelayedCall
+
+```csharp
+static Coroutine DelayedCall(this MonoBehaviour monoBehaviour, Action action, float delay)
+```
+
+Invokes an action after a delay (affected by Time.timeScale).
+
+#### DelayedCallUnscaled
+
+```csharp
+static Coroutine DelayedCallUnscaled(this MonoBehaviour monoBehaviour, Action action, float delay)
+```
+
+Invokes an action after a delay (unaffected by Time.timeScale).
+
+#### Interpolate
+
+```csharp
+static IEnumerator Interpolate(float duration, Action<float> onUpdate, Action onComplete = null, Func<float, float> easingFunction = null)
+```
+
+Interpolates a value from 0 to 1 over time with optional easing.
+
+**Example:**
+```csharp
+StartCoroutine(GameUtilities.Interpolate(
+    duration: 1f,
+    onUpdate: t => transform.position = Vector3.Lerp(startPos, endPos, t),
+    onComplete: () => Debug.Log("Animation complete"),
+    easingFunction: Easing.EaseInOutQuad
+));
+```
+
+### Transform Utilities
+
+#### DestroyChildren
+
+```csharp
+static void DestroyChildren(this Transform transform, bool immediate = false)
+```
+
+Destroys all children of a transform.
+
+#### Reset
+
+```csharp
+static void Reset(this Transform transform)
+```
+
+Resets transform to default values (position, rotation, scale).
+
+#### GetChildren
+
+```csharp
+static List<Transform> GetChildren(this Transform transform)
+```
+
+Gets all children as a list.
+
+### Collection Utilities
+
+#### GetRandom
+
+```csharp
+static T GetRandom<T>(this List<T> list)
+static T GetRandom<T>(this T[] array)
+```
+
+Returns a random element from a collection.
+
+#### Shuffle
+
+```csharp
+static void Shuffle<T>(this List<T> list)
+```
+
+Shuffles a list in place using Fisher-Yates algorithm.
+
+### Math Utilities
+
+#### Remap
+
+```csharp
+static float Remap(float value, float fromMin, float fromMax, float toMin, float toMax)
+```
+
+Remaps a value from one range to another.
+
+#### ClampAngle
+
+```csharp
+static float ClampAngle(float angle)
+```
+
+Clamps an angle to -180 to 180 range.
+
+### String Utilities
+
+#### FormatTime
+
+```csharp
+static string FormatTime(float seconds)
+```
+
+Formats seconds as MM:SS.
+
+**Example:** `FormatTime(125) // Returns "02:05"`
+
+#### FormatNumber
+
+```csharp
+static string FormatNumber(long number)
+```
+
+Formats large numbers with K/M/B suffixes.
+
+**Example:** `FormatNumber(1500) // Returns "1.5K"`
+
+### Layer Utilities
+
+#### IsInLayer
+
+```csharp
+static bool IsInLayer(GameObject gameObject, LayerMask layerMask)
+```
+
+Checks if a GameObject is in the specified layer.
+
+#### SetLayerRecursively
+
+```csharp
+static void SetLayerRecursively(GameObject gameObject, int layer)
+```
+
+Sets layer for a GameObject and all children.
+
+---
+
+## Easing
+
+Static class providing easing functions for smooth animations.
+
+### Available Functions
+
+All functions take a float `t` (0 to 1) and return an eased value:
+
+- `Linear(t)` - No easing
+- `EaseInQuad(t)` - Accelerating from zero velocity
+- `EaseOutQuad(t)` - Decelerating to zero velocity
+- `EaseInOutQuad(t)` - Acceleration until halfway, then deceleration
+- `EaseInCubic(t)` - Cubic acceleration
+- `EaseOutCubic(t)` - Cubic deceleration
+- `EaseInOutCubic(t)` - Cubic acceleration and deceleration
+- `EaseInQuart(t)` - Quartic acceleration
+- `EaseOutQuart(t)` - Quartic deceleration
+- `EaseInOutQuart(t)` - Quartic acceleration and deceleration
+- `EaseInSine(t)` - Sinusoidal acceleration
+- `EaseOutSine(t)` - Sinusoidal deceleration
+- `EaseInOutSine(t)` - Sinusoidal acceleration and deceleration
+- `EaseInExpo(t)` - Exponential acceleration
+- `EaseOutExpo(t)` - Exponential deceleration
+- `EaseInOutExpo(t)` - Exponential acceleration and deceleration
+- `EaseInBack(t)` - Back up slightly before moving forward
+- `EaseOutBack(t)` - Overshoot slightly at the end
+- `EaseInOutBack(t)` - Back up and overshoot
+- `EaseOutElastic(t)` - Elastic bounce at the end
+- `EaseOutBounce(t)` - Bouncing at the end
+
+### Example
+
+```csharp
+// Smooth scale animation with ease out
+float t = 0;
+while (t < 1f)
+{
+    t += Time.deltaTime;
+    float eased = Easing.EaseOutBack(t);
+    transform.localScale = Vector3.one * eased;
+    yield return null;
+}
+```
+
+---
+
 For more examples and best practices, see [BEST_PRACTICES.md](BEST_PRACTICES.md).
