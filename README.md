@@ -234,6 +234,12 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 For questions and support, please open an issue on the [GitHub repository](https://github.com/Kusa-Unity-Game-Dev/Essentials_Unity_GameDev).
 
+## Documentation
+
+- **[API Reference](API_REFERENCE.md)** - Complete API documentation for all classes and methods
+- **[Best Practices Guide](BEST_PRACTICES.md)** - Industry-standard best practices and common patterns
+- **[CHANGELOG](CHANGELOG.md)** - Version history and release notes
+
 ## Version History
 
 See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
