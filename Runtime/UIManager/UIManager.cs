@@ -51,8 +51,18 @@ public class UIManager : MonoBehaviour
         if (!uiScreens.Contains(uiName))
         {
             uiScreens.Add(uiName);
+            // Sort the list by sort order for easier management
+            SortUIScreens();
         }
 
+    }
+    
+    /// <summary>
+    /// Sorts the UI screens list by their sort order (lowest to highest).
+    /// </summary>
+    private void SortUIScreens()
+    {
+        uiScreens.Sort((a, b) => a.SortOrder.CompareTo(b.SortOrder));
     }
 
     public void UnregisterUI(UIBase uiName, bool a_bringStackUI = false)
@@ -105,6 +115,56 @@ public class UIManager : MonoBehaviour
         {
             HideUI(ui);
         }
+    }
+    
+    /// <summary>
+    /// Hides all UI elements in a specific layer.
+    /// </summary>
+    public void HideAllUIInLayer(UILayer layer)
+    {
+        for (int i = uiScreens.Count - 1; i >= 0; i--)
+        {
+            if (uiScreens[i].Layer == layer)
+            {
+                HideUI(uiScreens[i]);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Gets all visible UI elements in a specific layer.
+    /// </summary>
+    public List<UIBase> GetUIInLayer(UILayer layer)
+    {
+        List<UIBase> layerUIs = new List<UIBase>();
+        foreach (var ui in uiScreens)
+        {
+            if (ui.Layer == layer)
+            {
+                layerUIs.Add(ui);
+            }
+        }
+        return layerUIs;
+    }
+    
+    /// <summary>
+    /// Gets the topmost (highest priority) visible UI in a specific layer.
+    /// </summary>
+    public UIBase GetTopUIInLayer(UILayer layer)
+    {
+        UIBase topUI = null;
+        int maxPriority = -1;
+        
+        foreach (var ui in uiScreens)
+        {
+            if (ui.Layer == layer && ui.LayerPriority > maxPriority)
+            {
+                topUI = ui;
+                maxPriority = ui.LayerPriority;
+            }
+        }
+        
+        return topUI;
     }
 
 
