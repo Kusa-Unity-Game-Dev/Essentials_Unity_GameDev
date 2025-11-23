@@ -2,12 +2,12 @@ using System;
 using UnityEngine;
 
 namespace BB.Framework {
-public class FSM : MonoBehaviour, IEventListener<string>
+public class FSM : MonoBehaviour, IEventListener<object>
 {
     private static FSM s_Instance;
     private static FSM Instance => s_Instance;
 
-    private EventManager<string> m_EventManager;
+    private EventManager<object> m_EventManager;
     
     #region essentials
     private void Awake()
@@ -18,7 +18,7 @@ public class FSM : MonoBehaviour, IEventListener<string>
         }
         else
         {
-            m_EventManager = new EventManager<string>();
+            m_EventManager = new EventManager<object>();
             s_Instance = this;
             _onAwake();
         }
@@ -42,25 +42,25 @@ public class FSM : MonoBehaviour, IEventListener<string>
 
 
     #region static methods
-    public static EventManager<string> GetEventManager()
+    public static EventManager<object> GetEventManager()
     {
         if (!s_Instance) return null;
         return s_Instance.m_EventManager;
     }
 
-    public static void AddListener_s(string a_eventName, Action<string> listner)
+    public static void AddListener_s(string a_eventName, Action<object> listner)
     {
         if (!s_Instance) return;
         s_Instance.AddEventListener(a_eventName, listner);
     }
 
-    public static void RemoveListener_s(string a_eventName, Action<string> listner)
+    public static void RemoveListener_s(string a_eventName, Action<object> listner)
     {
         if (!s_Instance) return;
         s_Instance.RemoveEventListener(a_eventName, listner);
     }
 
-    public static void DispatchEvent_s(string a_eventName, string a_eventData)
+    public static void DispatchEvent_s(string a_eventName, object a_eventData)
     {
         if (!s_Instance) return;
         s_Instance.DispatchEvent(a_eventName, a_eventData);
@@ -70,16 +70,16 @@ public class FSM : MonoBehaviour, IEventListener<string>
 
 
     #region IEventListener
-    public void AddEventListener(string eventName, Action<string> listener)
+    public void AddEventListener(string eventName, Action<object> listener)
     {
         if (m_EventManager == null)
         {
-            m_EventManager = new EventManager<string>();
+            m_EventManager = new EventManager<object>();
         }
         m_EventManager.AddListener(eventName, listener);
     }
 
-    public void RemoveEventListener(string eventName, Action<string> listener)
+    public void RemoveEventListener(string eventName, Action<object> listener)
     {
         if (m_EventManager == null)
         {
@@ -88,7 +88,7 @@ public class FSM : MonoBehaviour, IEventListener<string>
         m_EventManager.RemoveListener(eventName, listener);
     }
 
-    public void DispatchEvent(string a_eventName, string a_eventData)
+    public void DispatchEvent(string a_eventName, object a_eventData)
     {
         if (m_EventManager == null)
         {
