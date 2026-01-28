@@ -3,6 +3,32 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace BB.Framework {
+
+/// <summary>
+/// Defines the layer category for UI elements.
+/// Each layer has a base sorting order that determines its rendering priority.
+/// UIs within the same layer are automatically managed for proper ordering.
+/// </summary>
+public enum UILayer
+{
+    /// <summary>Background layer for backdrop UIs (base order: 0)</summary>
+    Background = 0,
+    /// <summary>Main UI layer for primary game screens (base order: 100)</summary>
+    Main = 100,
+    /// <summary>HUD layer for heads-up display elements (base order: 200)</summary>
+    HUD = 200,
+    /// <summary>Popup layer for dialog boxes and popups (base order: 300)</summary>
+    Popup = 300,
+    /// <summary>Overlay layer for overlays and modals (base order: 400)</summary>
+    Overlay = 400,
+    /// <summary>Toast layer for notifications and toasts (base order: 500)</summary>
+    Toast = 500,
+    /// <summary>System layer for system-level UIs (base order: 600)</summary>
+    System = 600,
+    /// <summary>Debug layer for debug/dev console UIs (base order: 700)</summary>
+    Debug = 700
+}
+
 public abstract class UIBase : MonoBehaviour
 {
     [SerializeField]
@@ -15,10 +41,44 @@ public abstract class UIBase : MonoBehaviour
     [SerializeField]
     protected float m_outroAnimationTime = .4f;
 
+    [Space, Header("Layer Settings")]
     [SerializeField]
+    [Tooltip("The UI layer this element belongs to. Determines rendering order relative to other UIs.")]
+    private UILayer m_uiLayer = UILayer.Main;
+
+    [SerializeField]
+    [Tooltip("If true, this UI can be stacked and restored when another UI closes.")]
     public bool isAllowedToStack = true;
 
+    /// <summary>
+    /// Gets or sets the UI layer for this element. Changing this will update the sorting order.
+    /// </summary>
+    public UILayer Layer
+    {
+        get => m_uiLayer;
+        set
+        {
+            if (m_uiLayer != value)
+            {
+                UILayer oldLayer = m_uiLayer;
+                m_uiLayer = value;
+                if (IsVisible && UIManager.Instance != null)
+                {
+                    UIManager.Instance.OnUILayerChanged(this, oldLayer, value);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets whether this UI is currently visible.
+    /// </summary>
     public bool IsVisible { get; private set; }
+
+    /// <summary>
+    /// Gets the current sorting order assigned to this UI by the UIManager.
+    /// </summary>
+    public int CurrentSortingOrder { get; private set; }
 
     protected abstract void OnCanvasShowBegin();
     protected abstract void OnCanvasShowEnd();
@@ -31,10 +91,23 @@ public abstract class UIBase : MonoBehaviour
         m_graphicRaycaster.enabled = false;*/
     }
 
+    /// <summary>
+    /// Sets the sorting order for this UI's canvas.
+    /// Called by UIManager to manage layer-based ordering.
+    /// </summary>
+    /// <param name="sortingOrder">The sorting order to set.</param>
+    public void SetSortingOrder(int sortingOrder)
+    {
+        CurrentSortingOrder = sortingOrder;
+        if (m_canvas != null)
+        {
+            m_canvas.sortingOrder = sortingOrder;
+        }
+    }
+
     public void _UIBaseShowUI(float a_delay = 0.0f)
     {
         if (IsVisible) return;
-
 
         m_canvas.enabled = true;
         IsVisible = true;
@@ -51,7 +124,6 @@ public abstract class UIBase : MonoBehaviour
 
         IsVisible = false;
         OnCanvasHideBegin();
-
 
         UIManager.Instance.UnregisterUI(this);
 
@@ -79,7 +151,6 @@ public abstract class UIBase : MonoBehaviour
         
         m_canvas.enabled = false;
         m_graphicRaycaster.enabled = false;
-
 
         OnCanvasHideEnd();
     }
