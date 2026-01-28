@@ -22,12 +22,14 @@ public enum UILayer
     Popup = 3000,
     /// <summary>Overlay layer for overlays and modals (base order: 4000)</summary>
     Overlay = 4000,
+    /// <summary>Tooltip layer for tooltips and hints (base order: 5000)</summary>
+    Tooltip = 5000,
     /// <summary>Toast layer for notifications and toasts (base order: 5000)</summary>
-    Toast = 5000,
+    Toast = 6000,
     /// <summary>System layer for system-level UIs (base order: 6000)</summary>
-    System = 6000,
+    System = 7000,
     /// <summary>Debug layer for debug/dev console UIs (base order: 7000)</summary>
-    Debug = 7000
+    Debug = 8000
 }
 
 public abstract class UIBase : MonoBehaviour
