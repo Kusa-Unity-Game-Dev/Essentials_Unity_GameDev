@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace BB.Framework {
@@ -197,30 +196,35 @@ public class UIManager : MonoBehaviour
 
     /// <summary>
     /// Recalculates and assigns sorting orders for all UIs in a specific layer.
+    /// Also cleans up any null references from destroyed UIs.
     /// </summary>
     /// <param name="layer">The layer to recalculate.</param>
     private void RecalculateSortingOrdersForLayer(UILayer layer)
     {
         List<UIBase> layerList = m_layerUIMap[layer];
+        
+        // Clean up null references (from destroyed UIs)
+        layerList.RemoveAll(ui => ui == null);
+        
         int baseOrder = (int)layer;
 
         for (int i = 0; i < layerList.Count; i++)
         {
             UIBase ui = layerList[i];
-            if (ui != null)
-            {
-                int sortingOrder = baseOrder + (i * m_sortingOrderIncrement);
-                ui.SetSortingOrder(sortingOrder);
-            }
+            int sortingOrder = baseOrder + (i * m_sortingOrderIncrement);
+            ui.SetSortingOrder(sortingOrder);
         }
     }
 
     /// <summary>
-    /// Adds a UI to the history list.
+    /// Adds a UI to the history list, removing any existing entry to ensure no duplicates.
     /// </summary>
     /// <param name="ui">The UI to add to history.</param>
     private void AddToHistory(UIBase ui)
     {
+        // Remove existing entry to avoid duplicates
+        uiLastShownScreens.Remove(ui);
+        
         uiLastShownScreens.Add(ui);
         if (uiLastShownScreens.Count >= LAST_UI_REMEMBER_LIST)
         {
@@ -372,9 +376,9 @@ public class UIManager : MonoBehaviour
     /// </summary>
     public void ClearAllStacks()
     {
-        foreach (var layer in m_layerStacks.Keys.ToList())
+        foreach (var stack in m_layerStacks.Values)
         {
-            m_layerStacks[layer].Clear();
+            stack.Clear();
         }
     }
 
@@ -399,9 +403,9 @@ public class UIManager : MonoBehaviour
         Instance.uiLastShownScreens.Clear();
         Instance.ClearAllStacks();
         
-        foreach (var layer in Instance.m_layerUIMap.Keys.ToList())
+        foreach (var layerList in Instance.m_layerUIMap.Values)
         {
-            Instance.m_layerUIMap[layer].Clear();
+            layerList.Clear();
         }
     }
 

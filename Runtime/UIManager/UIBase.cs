@@ -8,25 +8,26 @@ namespace BB.Framework {
 /// Defines the layer category for UI elements.
 /// Each layer has a base sorting order that determines its rendering priority.
 /// UIs within the same layer are automatically managed for proper ordering.
+/// Layers are spaced 1000 apart to accommodate up to 100 UIs per layer (with default increment of 10).
 /// </summary>
 public enum UILayer
 {
     /// <summary>Background layer for backdrop UIs (base order: 0)</summary>
     Background = 0,
-    /// <summary>Main UI layer for primary game screens (base order: 100)</summary>
-    Main = 100,
-    /// <summary>HUD layer for heads-up display elements (base order: 200)</summary>
-    HUD = 200,
-    /// <summary>Popup layer for dialog boxes and popups (base order: 300)</summary>
-    Popup = 300,
-    /// <summary>Overlay layer for overlays and modals (base order: 400)</summary>
-    Overlay = 400,
-    /// <summary>Toast layer for notifications and toasts (base order: 500)</summary>
-    Toast = 500,
-    /// <summary>System layer for system-level UIs (base order: 600)</summary>
-    System = 600,
-    /// <summary>Debug layer for debug/dev console UIs (base order: 700)</summary>
-    Debug = 700
+    /// <summary>Main UI layer for primary game screens (base order: 1000)</summary>
+    Main = 1000,
+    /// <summary>HUD layer for heads-up display elements (base order: 2000)</summary>
+    HUD = 2000,
+    /// <summary>Popup layer for dialog boxes and popups (base order: 3000)</summary>
+    Popup = 3000,
+    /// <summary>Overlay layer for overlays and modals (base order: 4000)</summary>
+    Overlay = 4000,
+    /// <summary>Toast layer for notifications and toasts (base order: 5000)</summary>
+    Toast = 5000,
+    /// <summary>System layer for system-level UIs (base order: 6000)</summary>
+    System = 6000,
+    /// <summary>Debug layer for debug/dev console UIs (base order: 7000)</summary>
+    Debug = 7000
 }
 
 public abstract class UIBase : MonoBehaviour
