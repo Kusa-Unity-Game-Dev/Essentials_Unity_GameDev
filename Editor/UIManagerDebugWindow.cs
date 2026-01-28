@@ -31,6 +31,7 @@ namespace BB.Framework
 
         // Search/filter
         private string m_searchFilter = "";
+        private string m_searchFilterLower = "";  // Cached lowercase for efficient filtering
         private UILayer? m_layerFilter = null;
         private bool m_showOnlyVisible = false;
 
@@ -56,7 +57,7 @@ namespace BB.Framework
         public static void ShowWindow()
         {
             UIManagerDebugWindow window = GetWindow<UIManagerDebugWindow>("UI Manager Debug");
-            window.minSize = new Vector2(350, 400);
+            window.minSize = new Vector2(450, 400);
             window.Show();
         }
 
@@ -75,6 +76,16 @@ namespace BB.Framework
             Type uiManagerType = typeof(UIManager);
             m_layerUIMapField = uiManagerType.GetField("m_layerUIMap", BindingFlags.NonPublic | BindingFlags.Instance);
             m_layerStacksField = uiManagerType.GetField("m_layerStacks", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            // Log warning if reflection fields are not found
+            if (m_layerUIMapField == null)
+            {
+                Debug.LogWarning("[UIManagerDebugWindow] Could not find 'm_layerUIMap' field via reflection. Layer map visualization may not work.");
+            }
+            if (m_layerStacksField == null)
+            {
+                Debug.LogWarning("[UIManagerDebugWindow] Could not find 'm_layerStacks' field via reflection. Stack visualization may not work.");
+            }
 
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
@@ -212,10 +223,19 @@ namespace BB.Framework
             // Search field
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("Search:", GUILayout.Width(50));
+            
+            EditorGUI.BeginChangeCheck();
             m_searchFilter = EditorGUILayout.TextField(m_searchFilter);
+            if (EditorGUI.EndChangeCheck())
+            {
+                // Cache the lowercase version for efficient filtering
+                m_searchFilterLower = m_searchFilter.ToLower();
+            }
+            
             if (GUILayout.Button("Clear", GUILayout.Width(50)))
             {
                 m_searchFilter = "";
+                m_searchFilterLower = "";
                 GUI.FocusControl(null);
             }
             EditorGUILayout.EndHorizontal();
@@ -572,12 +592,12 @@ namespace BB.Framework
                 {
                     if (GUILayout.Button("Hide All UIs"))
                     {
-                        UIManager.Instance?.HideAllUI();
+                        UIManager.Instance.HideAllUI();
                     }
                     
                     if (GUILayout.Button("Clear All Stacks"))
                     {
-                        UIManager.Instance?.ClearAllStacks();
+                        UIManager.Instance.ClearAllStacks();
                     }
                     
                     if (GUILayout.Button("Clear All Data"))
@@ -648,10 +668,10 @@ namespace BB.Framework
             {
                 if (ui == null) continue;
                 
-                // Apply search filter
+                // Apply search filter using cached lowercase for efficiency
                 if (!string.IsNullOrEmpty(m_searchFilter))
                 {
-                    if (!ui.gameObject.name.ToLower().Contains(m_searchFilter.ToLower()))
+                    if (!ui.gameObject.name.ToLower().Contains(m_searchFilterLower))
                         continue;
                 }
                 
