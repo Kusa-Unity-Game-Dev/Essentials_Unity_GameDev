@@ -1,8 +1,12 @@
 {
     "name": "BB.Framework.essentials.editor",
     "rootNamespace": "BB.Framework",
-    "references": [],
-    "includePlatforms": [],
+    "references": [
+        "com.kusabb.essentials"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
