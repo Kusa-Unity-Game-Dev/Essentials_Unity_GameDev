@@ -33,6 +33,12 @@ public class UIManager : MonoBehaviour
     private Dictionary<UILayer, Stack<UIBase>> m_layerStacks = new Dictionary<UILayer, Stack<UIBase>>();
 
     /// <summary>
+    /// Global stack to track the order of all stacked UIs across all layers.
+    /// This ensures we always pop the last stacked UI regardless of its layer.
+    /// </summary>
+    private Stack<UIBase> m_globalStack = new Stack<UIBase>();
+
+    /// <summary>
     /// Increment for sorting order within each layer.
     /// </summary>
     [SerializeField]
@@ -137,23 +143,20 @@ public class UIManager : MonoBehaviour
         }
 
         // Handle stacking logic
-        Stack<UIBase> layerStack = m_layerStacks[layer];
-        
         if (pushToStack)
         {
-            // Push to stack for later restoration (only if stackable)
+            // Push to global stack for later restoration (only if stackable)
             if (ui.isAllowedToStack)
             {
-                layerStack.Push(ui);
+                m_globalStack.Push(ui);
             }
         }
         else
         {
-            // Try to restore a stacked UI only if the closing UI is stackable
-            // This prevents issues when non-stackable UIs close
-            if (ui.isAllowedToStack && layerStack.Count > 0)
+            // Try to restore the last stacked UI (from global stack)
+            if (ui.isAllowedToStack)
             {
-                UIBase stackedUI = layerStack.Pop();
+                UIBase stackedUI = PopLastStackedUI();
                 // Ensure the stacked UI is still valid and not destroyed
                 if (stackedUI != null)
                 {
@@ -372,7 +375,7 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Clears all stacks across all layers.
+    /// Clears all stacks across all layers and the global stack.
     /// </summary>
     public void ClearAllStacks()
     {
@@ -380,6 +383,7 @@ public class UIManager : MonoBehaviour
         {
             stack.Clear();
         }
+        m_globalStack.Clear();
     }
 
     /// <summary>
@@ -390,6 +394,43 @@ public class UIManager : MonoBehaviour
     public int GetStackCountForLayer(UILayer layer)
     {
         return m_layerStacks[layer].Count;
+    }
+
+    /// <summary>
+    /// Checks if any UI is in the global stack.
+    /// </summary>
+    /// <returns>True if the global stack has UIs, false otherwise.</returns>
+    public bool IsAnyUIInStack()
+    {
+        return m_globalStack.Count > 0;
+    }
+
+    /// <summary>
+    /// Gets the count of all stacked UIs in the global stack.
+    /// </summary>
+    /// <returns>Number of stacked UIs.</returns>
+    public int GetGlobalStackCount()
+    {
+        return m_globalStack.Count;
+    }
+
+    /// <summary>
+    /// Pops and returns the last stacked UI from the global stack.
+    /// Returns null if no UI is stacked.
+    /// </summary>
+    /// <returns>The last stacked UI or null if stack is empty.</returns>
+    private UIBase PopLastStackedUI()
+    {
+        while (m_globalStack.Count > 0)
+        {
+            UIBase ui = m_globalStack.Pop();
+            // Ensure the UI is still valid and not destroyed
+            if (ui != null)
+            {
+                return ui;
+            }
+        }
+        return null;
     }
 
     /// <summary>
