@@ -50,9 +50,9 @@ namespace BB.Framework
         {
             if (EventDictionary.TryGetValue(eventName, out var List))
             {
-                foreach (var kvp in List)
+                for (int i =0; i < List.Count; i++)
                 {
-                    kvp.Invoke(eventData);
+                    List[i].Invoke(eventData);
                 }
             }
         }
