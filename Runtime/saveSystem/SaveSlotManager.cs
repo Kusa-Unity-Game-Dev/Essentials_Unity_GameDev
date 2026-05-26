@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using BB.Framework.SaveV2;
 using UnityEngine;
+
 namespace BB.Framework {
 
+[Obsolete("Use BB.Framework.SaveV2.SaveSystem instead. SaveSlotManager is a v1 compatibility facade.")]
 public class SaveSlotManager : MonoBehaviour
 {
     public static SaveSlotManager Instance { get; private set; }
@@ -34,23 +37,13 @@ public class SaveSlotManager : MonoBehaviour
 
     public void DeleteGameSlot(string slotName)
     {
-        string path = Path.Combine(Application.persistentDataPath, SaveDirectory, SlotPrefix + slotName);
-        if (Directory.Exists(path))
-        { 
-            Directory.Delete(path, true);
-            Debug.Log($"Game slot deleted: {path}");
-        }
+        SaveSystem.EnsureInstance().DeleteSlotAsync(slotName).GetAwaiter().GetResult();
     }
 
     public string CreateGameSlot(string slotName)
     {
-        string path = Path.Combine(Application.persistentDataPath, SaveDirectory, SlotPrefix + slotName);
-        if (!Directory.Exists(path))
-        {
-            Directory.CreateDirectory(path);
-            Debug.Log($"Game slot created: {path}");
-        }
-        return path;
+        SaveSystem.EnsureInstance().CreateSlotAsync(slotName).GetAwaiter().GetResult();
+        return GetSlotPath(slotName);
     }
 
     public List<string> GetAvailableSlots()
@@ -65,7 +58,6 @@ public class SaveSlotManager : MonoBehaviour
         }
         return slots;
     }
-
 
     public string GetSlotPath(string slotName)
     {

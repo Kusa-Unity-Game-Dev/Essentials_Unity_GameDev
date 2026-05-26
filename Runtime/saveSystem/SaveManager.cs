@@ -1,13 +1,16 @@
+using System;
 using System.Collections.Generic;
+using BB.Framework.SaveV2;
 using UnityEngine;
 
 namespace BB.Framework {
 
+[Obsolete("Use BB.Framework.SaveV2.SaveSystem instead. SaveManager is a v1 compatibility facade.")]
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance { get; private set; }
 
-    private Dictionary<ESaveModule, SaveDataModule> saveModules = new Dictionary<ESaveModule, SaveDataModule>();
+    private readonly Dictionary<ESaveModule, string> m_EnumToId = new();
 
     private void Awake()
     {
@@ -22,88 +25,42 @@ public class SaveManager : MonoBehaviour
         }
     }
 
+    private static SaveSystem Sys => SaveSystem.EnsureInstance();
+
     public void RegisterModule(SaveDataModule module)
     {
-        if (!saveModules.ContainsKey(module.savemodule))
-        {
-            saveModules[module.savemodule] = module;
-        }
+        if (module == null) return;
+        Sys.RegisterModule(module);
+        var d = SaveModuleRegistry.GetOrSynthesize(module);
+        m_EnumToId[module.savemodule] = d.Id;
     }
 
-    // Save a specific module on demand
     public void SaveModule(string slotName, ESaveModule moduleType)
     {
-        if (saveModules.TryGetValue(moduleType, out var module))
-        {
-            string slotPath = SaveSlotManager.Instance.GetSlotPath(slotName);
-            module.SaveOnDemand(slotPath);
-        }
+        if (!m_EnumToId.TryGetValue(moduleType, out var id)) return;
+        Sys.SaveAsync(slotName, id).GetAwaiter().GetResult();
     }
-    
-    //save all
+
     public void SaveAllModule(string slotName)
     {
-        foreach (SaveDataModule module in saveModules.Values)
-        {
-            string slotPath = SaveSlotManager.Instance.GetSlotPath(slotName);
-            module.SaveOnDemand(slotPath);
-        }
+        Sys.SaveAllAsync(slotName).GetAwaiter().GetResult();
     }
 
-    // Load a specific module on demand
     public void LoadModule(string slotName, ESaveModule moduleType)
     {
-        if (saveModules.TryGetValue(moduleType, out var module))
-        {
-            string slotPath = SaveSlotManager.Instance.GetSlotPath(slotName);
-            module.LoadOnDemand(slotPath);
-        }
+        if (!m_EnumToId.TryGetValue(moduleType, out var id)) return;
+        Sys.LoadAsync(slotName, id).GetAwaiter().GetResult();
     }
 
-    //save all
     public void LoadAllModule(string slotName)
     {
-        foreach (SaveDataModule module in saveModules.Values)
-        {
-            string slotPath = SaveSlotManager.Instance.GetSlotPath(slotName);
-            module.LoadOnDemand(slotPath);
-        }
+        Sys.LoadAllAsync(slotName).GetAwaiter().GetResult();
     }
 
-    // Retrieve a specific module for use in the game
     public T GetModule<T>(ESaveModule moduleType) where T : SaveDataModule
     {
-        if (saveModules.TryGetValue(moduleType, out var module))
-        {
-            return module as T;
-        }
-        return null;
+        if (!m_EnumToId.TryGetValue(moduleType, out var id)) return null;
+        return Sys.GetModule<T>(id);
     }
 }
 }
-
-
-/*
- * 
- * the way to use :
-SaveSlotManager.Instance.CreateGameSlot("Game1");
-
-CurrencySaveModule currencyModule = new CurrencySaveModule();
-SaveManager.Instance.RegisterModule(currencyModule);
-
-SaveManager.Instance.LoadModule("Game1", ESaveModule.ECurrency);
-
-
-var currency = SaveManager.Instance.GetModule<CurrencySaveModule>(ESaveModule.ECurrency);
-if (currency != null)
-{
-    currency.AddCoins(50);
-    currency.AddGems(10);
-
-    // Save the updated data
-    SaveManager.Instance.SaveModule("Game1", ESaveModule.ECurrency);
-}
-
-
- * 
- */

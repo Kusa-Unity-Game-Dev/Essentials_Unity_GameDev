@@ -1,18 +1,28 @@
 {
     "name": "com.kusabb.essentials",
-    "version": "1.4.3",
+    "version": "1.5.0",
     "displayName": "Game Essentials",
     "description": "All essential modules like,  Manager, Event System & Notifications etc",
     "unity": "6000.0",
     "keywords": [
         "ui",
         "events",
-        "notification"
+        "notification",
+        "save",
+        "persistence"
     ],
     "author": {
         "name": "kunal sagar",
         "url": "https://github.com/kusaflow"
     },
     "dependencies": {
-    }
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+    },
+    "samples": [
+        {
+            "displayName": "Save System Demo",
+            "description": "Runnable example: two save modules + an on-screen save/load panel. Start here to learn the v2 save system.",
+            "path": "Samples/SaveSystemDemo"
+        }
+    ]
 }

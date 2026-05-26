@@ -1,13 +1,11 @@
 {
-    "name": "BB.Framework.essentials.editor",
-    "rootNamespace": "BB.Framework",
+    "name": "BB.Framework.essentials.demo",
+    "rootNamespace": "BB.Framework.SaveV2.Demo",
     "references": [
         "com.kusabb.essentials",
         "Unity.Newtonsoft.Json"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
