@@ -95,7 +95,8 @@ namespace BB.Framework.SaveV2
         public Task CreateSlotAsync(string slotName)
         {
             var path = Path.Combine(m_Root, SlotPrefix + slotName);
-            return Task.Run(() => Directory.CreateDirectory(path));
+            Directory.CreateDirectory(path);
+            return Task.CompletedTask;
         }
 
         public Task<bool> SlotExistsAsync(string slotName)
