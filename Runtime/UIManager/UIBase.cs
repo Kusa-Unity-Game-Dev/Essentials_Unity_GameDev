@@ -148,17 +148,28 @@ public abstract class UIBase : MonoBehaviour
         StartCoroutine(HideAfterTransition(a_delay));
     }
 
-    private IEnumerator HideAfterTransition(float a_delay)
+    /// <summary>
+    /// Waits out the hide delay, then disables the canvas/raycaster and fires
+    /// OnCanvasHideEnd. Virtual so transition frameworks can replace the fixed wait with
+    /// signal-based completion (e.g. com.kusabb.chromeui waits until its transition
+    /// director settles, which keeps interrupted/redirected transitions correct).
+    /// </summary>
+    protected virtual IEnumerator HideAfterTransition(float a_delay)
     {
         yield return new WaitForSecondsRealtime(a_delay); // Adjust for transition duration
-        
+
         m_canvas.enabled = false;
         m_graphicRaycaster.enabled = false;
 
         OnCanvasHideEnd();
     }
 
-    private IEnumerator ReadyAfterTransition(float a_delay)
+    /// <summary>
+    /// Waits out the show delay, then enables the raycaster and fires OnCanvasShowEnd —
+    /// the "UI is interactive only when fully settled" gate. Virtual for the same reason
+    /// as <see cref="HideAfterTransition"/>.
+    /// </summary>
+    protected virtual IEnumerator ReadyAfterTransition(float a_delay)
     {
         yield return new WaitForSecondsRealtime(a_delay); // Adjust for transition duration
         m_graphicRaycaster.enabled = true;

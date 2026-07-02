@@ -2,6 +2,17 @@
 
 All notable changes to `com.kusabb.essentials` are documented here.
 
+## [1.6.0] - 2026-07-02
+
+### Changed
+
+- `UIBase.ReadyAfterTransition` and `UIBase.HideAfterTransition` are now `protected virtual`
+  (were `private`). Behavior is unchanged for existing UIs; subclasses can now substitute
+  signal-based completion for the fixed delay. Motivated by `com.kusabb.chromeui`, whose
+  interruptible transitions extend past the originally scheduled delay — its `ChromeUIBase`
+  overrides both to wait until the transition director settles, and to skip disabling the
+  canvas when the UI was re-shown mid-hide.
+
 ## [1.5.0] - 2026-05-16
 
 ### Added — Save System v2
