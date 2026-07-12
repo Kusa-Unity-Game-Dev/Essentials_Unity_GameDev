@@ -41,6 +41,11 @@ namespace BB.Framework.SaveV2
         // Manifest cache so the save/load UI doesn't re-read disk on every repaint.
         private readonly Dictionary<string, SlotManifest> m_ManifestCache = new(StringComparer.OrdinalIgnoreCase);
 
+        // In-flight write bookkeeping per gate key (a slot+module, or a slot for the
+        // shared manifest). Lets concurrent saves serialize + coalesce onto one file
+        // instead of racing. See the "Concurrent-save coalescing" region below.
+        private readonly Dictionary<string, CoalescingGate> m_SaveGates = new(StringComparer.Ordinal);
+
         public IReadOnlyDictionary<string, SaveDataModule> RegisteredModules => m_Modules;
 
         /// <summary>Fired whenever a load has to fall back (checksum fail, backup restore, defaults, legacy migrate).</summary>
@@ -150,8 +155,10 @@ namespace BB.Framework.SaveV2
                 throw new InvalidOperationException($"Module '{moduleId}' not registered.");
 
             var d = SaveModuleRegistry.GetOrSynthesize(module);
-            await WriteModuleAsync(slotName, module, d);
-            await TouchManifestAsync(slotName, d);
+            // Route through the coalescing gate so two SaveAsync calls for the same
+            // slot+module never write the same file at once, and a burst of requests
+            // collapses into a single trailing write of the latest module state.
+            await RunCoalescedAsync(ModuleGateKey(slotName, d.Id), () => WriteAndTouchAsync(slotName, module, d));
         }
 
         /// <summary>Persist every registered module to a slot.</summary>
@@ -160,8 +167,7 @@ namespace BB.Framework.SaveV2
             foreach (var pair in m_Modules)
             {
                 var d = SaveModuleRegistry.GetOrSynthesize(pair.Value);
-                await WriteModuleAsync(slotName, pair.Value, d);
-                await TouchManifestAsync(slotName, d);
+                await RunCoalescedAsync(ModuleGateKey(slotName, d.Id), () => WriteAndTouchAsync(slotName, pair.Value, d));
             }
         }
 
@@ -253,6 +259,15 @@ namespace BB.Framework.SaveV2
         }
 
         // --- Internal write/read mechanics ---------------------------------------
+
+        // One logical save unit: persist the module file, then refresh the slot manifest.
+        // This is the delegate the coalescing gate re-runs for the trailing write, so it
+        // re-serializes the module's *current* state each time it is invoked.
+        private async Task WriteAndTouchAsync(string slotName, SaveDataModule module, SaveModuleDescriptor d)
+        {
+            await WriteModuleAsync(slotName, module, d);
+            await TouchManifestAsync(slotName, d);
+        }
 
         // Serialize the module -> wrap in an envelope (checksum, header) -> hand bytes to storage.
         // The storage backend is responsible for atomic write + backup rotation.
@@ -440,7 +455,10 @@ namespace BB.Framework.SaveV2
             }
             manifest.Modules[d.Id] = d.Version;
             manifest.Touch();
-            await WriteManifestAsync(slotName, manifest);
+            // The manifest is one per-slot file shared by every module, so route its
+            // write through a per-slot gate too — otherwise two different modules
+            // saving to the same slot at once would clobber each other's manifest.
+            await RunCoalescedAsync(ManifestGateKey(slotName), () => WriteManifestAsync(slotName, manifest));
         }
 
         // The manifest is itself an enveloped+checksummed file (never encrypted, always compressed).
@@ -463,6 +481,87 @@ namespace BB.Framework.SaveV2
             if (Encryptor != null) return Encryptor;
             Encryptor = new AesEncryption(KeyProvider ??= new DefaultKeyProvider());
             return Encryptor;
+        }
+
+        // --- Concurrent-save coalescing ------------------------------------------
+        //
+        // WriteModuleAsync serializes the module synchronously, but the actual file
+        // I/O (Storage.WriteAsync) runs on a thread-pool thread. So two SaveAsync
+        // calls for the same slot+module would run the atomic write on the SAME path
+        // at once — the second open of the ".tmp" file (FileShare.None) throws, or the
+        // backup-rotation moves interleave and shred the .bak chain. Net effect: one
+        // of the two saves is silently lost.
+        //
+        // The gate guarantees at most one write per key runs at a time. Requests that
+        // arrive while a write is in flight do NOT each queue their own write — they
+        // COALESCE into a single trailing write. Because every save re-reads the
+        // module's *current* state, one write after the burst already holds the
+        // latest data, making the intermediate writes redundant (the "keep the last
+        // one" behaviour). Each caller's returned Task still completes only after a
+        // write that started at or after its request finished, so `await SaveAsync`
+        // remains a real "it's on disk now" guarantee.
+        //
+        // NOTE: gate state is only touched from async continuations that resume on
+        // Unity's main thread, so no locking is needed — provided save/load calls
+        // originate on the main thread (the normal case, and the same assumption the
+        // rest of the system already makes).
+
+        private sealed class CoalescingGate
+        {
+            public bool Redirty;                          // a save was requested while the active write ran
+            public TaskCompletionSource<bool> Trailing;   // shared completion for the coalesced trailing write
+        }
+
+        private static string ModuleGateKey(string slotName, string moduleId) => "m\0" + slotName + "\0" + moduleId;
+        private static string ManifestGateKey(string slotName) => "s\0" + slotName;
+
+        // Run <paramref name="work"/> so that only one invocation per <paramref name="key"/>
+        // is in flight at a time, and any calls arriving during a run fold into a single
+        // trailing run. Returns a Task that completes once a run covering the caller's
+        // request has finished (or faults if that run threw).
+        private Task RunCoalescedAsync(string key, Func<Task> work)
+        {
+            if (m_SaveGates.TryGetValue(key, out var gate))
+            {
+                // A write is already running for this key. Fold this request into the
+                // single trailing write instead of starting a competing one.
+                gate.Redirty = true;
+                gate.Trailing ??= new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                return gate.Trailing.Task;
+            }
+
+            gate = new CoalescingGate();
+            m_SaveGates[key] = gate;
+            return DrainAsync(key, gate, work);
+        }
+
+        private async Task DrainAsync(string key, CoalescingGate gate, Func<Task> work)
+        {
+            try
+            {
+                await work();   // first pass: the state captured by the caller that opened the gate
+
+                // Collapse everything requested during the write into one more pass.
+                while (gate.Redirty)
+                {
+                    gate.Redirty = false;
+                    var trailing = gate.Trailing;
+                    gate.Trailing = null;
+                    try { await work(); }
+                    catch (Exception e) { trailing?.TrySetException(e); throw; }
+                    trailing?.TrySetResult(true);
+                }
+            }
+            catch (Exception e)
+            {
+                // Don't leave a folded-in request awaiting forever if a pass failed.
+                gate.Trailing?.TrySetException(e);
+                throw;
+            }
+            finally
+            {
+                m_SaveGates.Remove(key);
+            }
         }
     }
 }
