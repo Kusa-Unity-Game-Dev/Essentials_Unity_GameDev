@@ -4,9 +4,8 @@ using UnityEngine;
 namespace BB.Framework {
 public class FSM : MonoBehaviour, IEventListener<object>
 {
-    private static FSM s_Instance;
-    private static FSM Instance => s_Instance;
-
+    protected static FSM s_Instance;
+    
     private EventManager<object> m_EventManager;
     
     #region essentials
